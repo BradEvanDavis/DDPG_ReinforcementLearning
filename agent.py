@@ -8,13 +8,13 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-BUFFER_SIZE = int(1e5)              # replay buffer size
-BATCH_SIZE = torch.half(128)        # minibatch size
-GAMMA = torch.half(0.99)            # discount factor
-TAU = torch.half(1e-3)              # for soft update of target parameters
-LR_act = torch.half(1e-4)           # learning rate of the actor 
-LR_critic = torch.half(1e-3)        # learning rate of the critic
-WEIGHT_DECAY = torch.half(0)        # L2 weight decay
+buffer_size = int(1e5)  # replay buffer size
+batch_size = 128        # minibatch size
+gamma = 0.99            # discount factor
+tau = 1e-3              # for soft update of target parameters
+LR_act = 1e-4           # learning rate of the actor 
+LR_critic = 1e-3        # learning rate of the critic
+weight_decay = 0        # L2 weight decay
 
 device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -35,7 +35,7 @@ class Agent():
         self.noise = OUNoise(action_size, random_seed)
 
         #replay memory
-        self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
+        self.memory = ReplayBuffer(action_size, buffer_size, batch_size, random_seed)
 
     def step(self, state, action, reward, next_sate, done):
         #save experience in replay memory
@@ -43,7 +43,7 @@ class Agent():
         #learn
         if len(self.memory) > BATCH_SIZE:
             experience = self.memory.sample()
-            self.learn(expieriences, gamma)
+            self.learn(experiences, gamma)
     
     def act(self, state, add_noise=True):
         #reutrn action based on current policy
@@ -104,7 +104,7 @@ class Agent():
             tau: interpolation parameter 
         """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
-            target_param.data.copy_(tau*local_param.data + (1-tau)*target_param,data)
+            target_param.data.copy_(tau*local_param.data + (1-tau)*target_param.data)
 
 class OUNoise:
     '''Ornstein-Uhlenbeck process'''

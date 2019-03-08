@@ -9,7 +9,7 @@ def hidden_init(layer):
     return (-lim, lim)
 
 
-class Actor(nn.Moduile):
+class Actor(nn.Module):
     def __init__(self, state_size, action_size, seed, action_sizes, fcAct_units1, fcAct_units2, fcAct_units3, fcAct_units4):
         """Initialize parameters and build model.
         Params
@@ -29,21 +29,21 @@ class Actor(nn.Moduile):
         self.fc5 = FC_layer(fcAct_units4, action_sizes, bias=False, Batchnorm=False)
         self.reset_parameters()
 
-    def reset_parameters(self):
-        self.fcs1.weight.data.uniform_(*hidden_init(self.fcs1))
-        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
-        self.fc4.weight.data.uniform_(*hidden_init(self.fc4))
-        self.fc5.weight.data.uniform_(-3e-3, 3e-3)
+        def reset_parameters(self):
+            self.fcs1.weight.data.uniform_(*hidden_init(self.fcs1))
+            self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+            self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+            self.fc4.weight.data.uniform_(*hidden_init(self.fc4))
+            self.fc5.weight.data.uniform_(-3e-3, 3e-3)
     
-    def forward(self,state):
-        """Build an actor (policy) network that maps states -> actions."""
-        out =  F.selu(self.fc1(state))
-        out =  F.selu(self.fc2(out))
-        out =  F.selu(self.fc3(out))
-        out =  F.selu(self.fc4(out))
-        out =  F.tanh(self.fc5(out))
-        return out
+        def forward(self,state):
+            """Build an actor (policy) network that maps states -> actions."""
+            out =  F.selu(self.fc1(state))
+            out =  F.selu(self.fc2(out))
+            out =  F.selu(self.fc3(out))
+            out =  F.selu(self.fc4(out))
+            out =  F.tanh(self.fc5(out))
+            return out
 
 
 class Critic(nn.Module):
@@ -67,19 +67,19 @@ def __init__(self, state_size, action_size, seed, fc1_units, fc2_units, fc3_unit
         self.fc5 = FC_layer(fc4_units, 1, bias=False, Batchnorm=False)
         self.reset_parameters()
 
-    def reset_parameters(self):
-        self.fcs1.weight.data.uniform_(*hidden_init(self.fc1))
-        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
-        self.fc4.weight.data.uniform_(*hidden_init(self.fc4))
-        self.fc5.weight.data.uniform_(-3e-3, 3e-3)
+        def reset_parameters(self):
+            self.fcs1.weight.data.uniform_(*hidden_init(self.fc1))
+            self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+            self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+            self.fc4.weight.data.uniform_(*hidden_init(self.fc4))
+            self.fc5.weight.data.uniform_(-3e-3, 3e-3)
     
-    def forward(self,state, action):
-        """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
-        xs =  F.selu(self.fc1(state))
-        out = torch.cat((xs, action), dim=1)
-        out =  F.selu(self.fc2(x))
-        out =  F.selu(self.fc3(out))
-        out =  F.selu(self.fc4(out))
-        out =  self.fc5(out)
-        return out
+        def forward(self,state, action):
+            """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
+            xs =  F.selu(self.fc1(state))
+            out = torch.cat((xs, action), dim=1)
+            out =  F.selu(self.fc2(x))
+            out =  F.selu(self.fc3(out))
+            out =  F.selu(self.fc4(out))
+            out =  self.fc5(out)
+            return out
