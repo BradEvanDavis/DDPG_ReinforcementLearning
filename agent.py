@@ -10,19 +10,19 @@ from collections import deque
 import torch.optim as optim
 import torch.nn as nn
 
-BUFFER_SIZE = int(1e6)  # replay buffer size
-BATCH_SIZE = 128     # minibatch size
-GAMMA = 0.99            # discount factor
+BUFFER_SIZE = int(1e8)  # replay buffer size
+BATCH_SIZE = 256     # minibatch size
+GAMMA = 0.99         # discount factor
 TAU = 1e-3              # for soft update of target parameters
-LR_ACT = 0.001           # learning rate of the actor 
-LR_CRITIC = 0.001        # learning rate of the critic
-WEIGHT_DECAY = 0.0001   # L2 weight decay
+LR_ACT = 1e-3           # learning rate of the actor 
+LR_CRITIC = 1e-4        # learning rate of the critic
+WEIGHT_DECAY = 1e-6  # L2 weight decay
 LEARN_NUM = 10
 LEARN_EVERY = 20
-EPSILON = 0.75
-EPSILON_DECAY = 0.00001
+EPSILON = 0.50
+EPSILON_DECAY = 1e-6
 
-device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Agent():
     def __init__(self, state_size, action_size, random_seed=44):
@@ -31,12 +31,16 @@ class Agent():
         self.seed = random.seed(random_seed)
         self.epsilon = EPSILON
 
-        self.actor_local = nn.DataParallel(Actor(state_size, action_size, random_seed)).cuda()
-        self.actor_target = nn.DataParallel(Actor(state_size, action_size, random_seed)).cuda() 
+        #self.actor_local = nn.DataParallel(Actor(state_size, action_size, random_seed)).cuda()
+        #self.actor_target = nn.DataParallel(Actor(state_size, action_size, random_seed)).cuda() 
+        self.actor_local = Actor(state_size, action_size).to(device)
+        self.actor_target = Actor(state_size, action_size).to(device)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACT)
         
-        self.critic_local = nn.DataParallel(Critic(state_size, action_size, random_seed)).cuda()
-        self.critic_target = nn.DataParallel(Critic(state_size, action_size, random_seed)).cuda()
+        #self.critic_local = nn.DataParallel(Critic(state_size, action_size, random_seed)).cuda()
+        #self.critic_target = nn.DataParallel(Critic(state_size, action_size, random_seed)).cuda()
+        self.critic_local = Critic(state_size, action_size).to(device)
+        self.critic_target = Critic(state_size, action_size).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
         
         #generate noise
@@ -45,11 +49,15 @@ class Agent():
         #replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
 
-    def step(self, state, action, reward, next_state, done, timestep):
+    def step(self, state, action, reward, next_state, done, timestep, i_episode):
         #save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)
+        
         #learn
-        if len(self.memory) > BATCH_SIZE and timestep % LEARN_EVERY==0:
+        if len(self.memory) > BATCH_SIZE and i_episode<100:
+            experiences = self.memory.sample()
+            self.learn(experiences, 1)
+        elif len(self.memory) > BATCH_SIZE and timestep % LEARN_EVERY==0:
             for _ in range(LEARN_NUM):
                 experiences = self.memory.sample()
                 self.learn(experiences, GAMMA)
