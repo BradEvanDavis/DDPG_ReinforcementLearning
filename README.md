@@ -1,5 +1,3 @@
-# DDPG_ReinforcementLearning
-
 # Continuous Control Implementation
 ## Deep Deterministic Policy Gradient Reinforcement Learning Agent
 
