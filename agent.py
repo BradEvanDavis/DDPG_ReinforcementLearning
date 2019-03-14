@@ -12,15 +12,16 @@ import torch.nn as nn
 
 BUFFER_SIZE = int(1e8)  # replay buffer size
 BATCH_SIZE = 256     # minibatch size
-GAMMA = 0.99         # discount factor
+GAMMA = 0.9         # discount factor
+GAMMA_START = 1.0
 TAU = 1e-3              # for soft update of target parameters
 LR_ACT = 1e-3           # learning rate of the actor 
 LR_CRITIC = 1e-4        # learning rate of the critic
 WEIGHT_DECAY = 1e-6  # L2 weight decay
 LEARN_NUM = 10
 LEARN_EVERY = 20
-EPSILON = 0.50
-EPSILON_DECAY = 1e-6
+EPSILON = 1.0
+EPSILON_DECAY = 1e-7
 
 device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -54,9 +55,9 @@ class Agent():
         self.memory.add(state, action, reward, next_state, done)
         
         #learn
-        if len(self.memory) > BATCH_SIZE and i_episode<100:
+        if len(self.memory) > BATCH_SIZE and i_episode<200:
             experiences = self.memory.sample()
-            self.learn(experiences, 1)
+            self.learn(experiences, GAMMA_START)
         elif len(self.memory) > BATCH_SIZE and timestep % LEARN_EVERY==0:
             for _ in range(LEARN_NUM):
                 experiences = self.memory.sample()
@@ -70,7 +71,7 @@ class Agent():
             action = self.actor_local(state).detach().cpu().data.numpy()
         self.actor_local.train()
         if add_noise:
-            action += self.epsilon * self.noise.sample()
+            action += (self.epsilon) * self.noise.sample()
         return np.clip(action, -1, 1)
 
     def reset(self):
