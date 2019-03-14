@@ -11,10 +11,19 @@ The reacher environment’s benchmark implementation maintains an average of 30p
 
 
 ### DDPG Algorithm Background:
-This implementation pf the actor critic method of deep reinforcement learning utilizes a Deep Deterministic Policy Gradient (DDPG) to evaluate a continuous action space.  DDPG is based on the papers ‘Deterministic Policy Gradient Algorithms’ published in 2014 by David Silver and ‘Continuous Control with Deep Reinforcement Learning’ published by Tomothy P. Lillicrap in 2015.
-Unlike other actor critic methods that rely on stochastic distributions to return probabilities across a discreet action space, DDPG utilizes a deterministic policy to directly estimate a set of actions actions based on the environment’s current state.  As a result, DDPG is able to take advantage of Q values (much like DQN) which allows the estimation of rewards by maximizing Q via a feed-forward Critic network.  The actor feed-forward network then is able to use the critic’s value estimates to choose the action that maximizes Q via back-propagation (stochastic gradient decent of the deterministic policy gradient allows optimizing for Q by minimizing the MSE of the objective).
+This actor-critic implementation utilizes deep reinforcement learning known as Deep Deterministic Policy Gradient (DDPG) to evaluate a continuous action space.  DDPG is based on the papers ‘Deterministic Policy Gradient Algorithms’ published in 2014 by David Silver and ‘Continuous Control with Deep Reinforcement Learning’ published by Tomothy P. Lillicrap in 2015.
 
-Like DQN, DDPG requires us to explore the environment to determine the correct policy – this is accomplished by adding noise via the Ornstein-Uhlenbeck process (ON) to explore the environment controlled by some value of Epsilon controlling how greedy the policy is.
+Unlike other actor-critic methods that rely on stochastic distributions to return probabilities across a discreet action space, DDPG utilizes a deterministic policy to directly estimate a set of continuous actions based on the environment’s current state.  As a result, DDPG is able to take advantage of Q values (much like DQN) which allows the estimation of rewards by maximizing Q via a feed-forward Critic network.  The actor feed-forward network then is able to use the critic’s value estimates to choose the action that maximizes Q via back-propagation (stochastic gradient decent of the deterministic policy gradient allows optimizing for Q by minimizing MSE).
+
+Like DQN, DDPG requires the agent to explore the environment in-order to determine an optimal policy – this is accomplished by adding noise via the Ornstein-Uhlenbeck process (ON) to explore the environment.  This implementation additionally adds a value of Epsilon to control how greedy the policy is, as well as a learning modifier to control when the model implements a learning step.  
+
+To better control learning this implementation decays the value of Epsilon for each action.  At the beginning of training the model Epsilon is set to 1 and adds ON noise to every action.  Epsilon is then decayed over time so that the policy gradually becomes more greedy to exploit value maximizing actions.  
+
+Specifically, within this implementation learning via gradient descent is conducted after each step within the environment for the first 200 turns to help speed up training.  After 200 episodes the model continues to train at a changed rate, then based on the accumulation of experiences from 20 steps the model learns over 10 passes – this ultimately helps stabilize scores over time.
+
+Of note, using this methodology in some instances resulted in stalled learning via a ‘learning ceiling’.  The model ultimately selected was able to break this barrier based on the addition of noise after training several models, therefore a good way to choose an optimal implementation is to train multiple independent agents and then to select the top performing ones from that set of trained models.
+
+In order to further improve the implemented DDPG model several improvements could be made by implementing updated features including prioritized replay, training multiple agents across independently generated policies, and through dynamic epsilon values that choose greedy policies or exploration dependent on the performance of the network and observations within the environment. 
 
 
 ### How to run:
