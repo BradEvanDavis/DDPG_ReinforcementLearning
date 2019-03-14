@@ -27,14 +27,15 @@ Like DQN, DDPG requires us to explore the environment to determine the correct p
 
 
 ### Requirements:
-•	python 3.6+
-•	pytorch 1.0+ (Instructions: https://pytorch.org/)
-•	CUDA 9.0+
-•	UnityAgent (Instructions: https://github.com/Unity-Technologies/ml-agents)
-•	Jupyter NoteBook
-•	Numpy
-•	Matplotlib
-•	Reacher Unity Environment (Linux),(OSX), (Win64),(Win32)
+1.	python 3.6+
+2.	pytorch 1.0+ (Instructions: https://pytorch.org/)
+3.	CUDA 9.0+
+4.	UnityAgent (Instructions: https://github.com/Unity-Technologies/ml-agents)
+5.	Jupyter NoteBook
+6.	Numpy
+7.	Matplotlib
+8.	Reacher Unity Environment (Linux),(OSX), (Win64),(Win32)
+
 
 
 ### Running the Code:
